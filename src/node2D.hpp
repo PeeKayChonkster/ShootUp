@@ -11,7 +11,7 @@ namespace prim
     #define MAX_NODES 1000
     #define START_OVERRIDE startChildren();
     #define UPDATE_OVERRIDE updateChildren(deltaTime);
-    #define DRAW_OVERRIDE if(!visible) return; drawChildren();
+    #define DRAW_OVERRIDE if(!visible) return; drawChildren();      // ?: Maybe override macros should call parent method instead of calling children methods?
 
     class Drawable
     {
@@ -33,7 +33,7 @@ namespace prim
     class Node2D
     {
     private:
-        uint16_t id;
+        uint16_t id = 0;
         static bool nodeCache[MAX_NODES];
         
         int getNewId();

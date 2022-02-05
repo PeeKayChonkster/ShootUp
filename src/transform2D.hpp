@@ -34,6 +34,7 @@ namespace prim
 
         void move(raylib::Vector2 translation);
         void rotate(float angle);
+        void scaleUp(raylib::Vector2 scaleOffset);
         void lookAt(raylib::Vector2 point);
 
         raylib::Transform2D getRaylibTransform() const;

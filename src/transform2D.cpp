@@ -1,7 +1,7 @@
 #include "transform2D.hpp"
 #include <raymath.h>
 #include <algorithm>
-#include <node2D.hpp>
+#include "node2D.hpp"
 
 raylib::Vector2 prim::Transform2D::getGlobalPosition() const
 {
@@ -76,6 +76,11 @@ void prim::Transform2D::move(raylib::Vector2 translate)
 void prim::Transform2D::rotate(float angle)
 {
     transform.rotation += angle;
+}
+
+void prim::Transform2D::scaleUp(raylib::Vector2 scaleOffset)
+{
+    transform.scale += scaleOffset;
 }
 
 void prim::Transform2D::lookAt(raylib::Vector2 point)

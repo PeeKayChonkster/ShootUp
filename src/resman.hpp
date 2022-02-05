@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <memory>
 #include <raylib-cpp.hpp>
-#include "exception.hpp"
+#include "prim_exception.hpp"
 
 namespace prim
 {
@@ -131,7 +131,7 @@ public:
     {
         packagePath = path;
         std::ifstream ifstream(packagePath, std::ios::binary);
-        if(!ifstream.good()) throw prim_EXCEPTION("Resman couldn't load package.");
+        if(!ifstream.good()) throw PRIM_EXCEPTION("Resman couldn't load package.");
         // char buffer
         char c = 0;
         std::string rawData;
@@ -232,7 +232,7 @@ public:
     static raylib::Texture loadTexture(std::string path)
     {
         Resfile* fileData = getFile(path);
-        if(!fileData) throw prim_EXCEPTION("File loading failed.");
+        if(!fileData) throw PRIM_EXCEPTION("File loading failed.");
         return raylib::Image(fs::path(path).extension().string(), fileData->data.get(), fileData->size).LoadTexture();
     }
 };
