@@ -3,17 +3,17 @@
 source /usr/local/bin/color.sh
 
 CMAKE_BUILD_DIR="../out"
-PROJECT_NAME="Isolation"
+PROJECT_NAME="ShootUp"
 BUILD_TYPE="Debug"
 POSTFIX="-d"
 
 configure() {
-    echo -e "configuring cmake..."
-    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -S . -B $CMAKE_BUILD_DIR && cp $CMAKE_BUILD_DIR/compile_commands.json .
+    echo -e "Configuring cmake..."
+    cmake -G Ninja -DCMAKE_BUILD_TYPE=$BUILD_TYPE -S . -B $CMAKE_BUILD_DIR
 }
 
 build() {
-    echo -e "building..."
+    echo -e "Building..."
     cmake --build $CMAKE_BUILD_DIR --config $BUILD_TYPE || (configure && cmake --build $CMAKE_BUILD_DIR --config $BUILD_TYPE)
 }
 
@@ -22,14 +22,14 @@ build_and_run() {
 }
 
 run() {
-    echo -e "running..."
-    $CMAKE_BUILD_DIR/bin/$PROJECT_NAME$POSTFIX || (build && $CMAKE_BUILD_DIR/bin/$PROJECT_NAME)
+    echo -e "Running..."
+    $CMAKE_BUILD_DIR/bin/$PROJECT_NAME$POSTFIX || echo -e "${RED}Working build wasn't found${NOCOLOR}"
 }
 
 clean_all() {
-    echo -e "cleaning..."
-    rm -rf $CMAKE_BUILD_DIR/*
-    rm -rf $CMAKE_BUILD_DIR/.*
+    echo -e "Cleaning..."
+    rm -rf $CMAKE_BUILD_DIR/{*,.*} &> /dev/null
+    echo -e "${GREEN}All cleaned!${NOCOLOR}"
 }
 
 change_build_type() {
