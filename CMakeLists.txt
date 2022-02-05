@@ -8,7 +8,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BINARY_DIR}bin)
 
 
 set(SHOOTUP_SRC
-    main.cpp
+    main.cpp transform2D.cpp node2D.cpp
     )
 
 list(TRANSFORM SHOOTUP_SRC PREPEND "src/")
