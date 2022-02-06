@@ -5,14 +5,25 @@
 
 //// static members /////
 bool prim::Node2D::nodeCache[MAX_NODES] = { false };
+/////////////////////////
 
-/*
-    * 
-*/
+prim::Node2D::Node2D(std::string name) : name(name), transform()
+{
+    int newId = getNewId();
+    if(newId < 0) throw PRIM_EXCEPTION("Engine gave out all IDs or this node already has an ID.");
+    else id = static_cast<uint16_t>(newId);
+    transform.node = this;
+}
+
+prim::Node2D::~Node2D()
+{
+    nodeCache[id] = false;
+}
+
 int prim::Node2D::getNewId()
 {
     if(id) return -1; // return if node already has an id
-    for(uint16_t i = 0u; i < MAX_NODES; ++i)
+    for(int i = 0; i < MAX_NODES; ++i)
     {
         if(!nodeCache[i]) 
         {
@@ -22,22 +33,6 @@ int prim::Node2D::getNewId()
         }
     }
     return -1;
-}
-/////////////////////////
-
-
-prim::Node2D::Node2D() : Node2D("_noname_") {}
-
-prim::Node2D::Node2D(std::string name) : name(name), transform()
-{
-    if(int newId = getNewId() < 0) throw PRIM_EXCEPTION("Engine gave out all IDs or this node already has an ID.");
-    else id = static_cast<uint16_t>(newId);
-    transform.node = this;
-}
-
-prim::Node2D::~Node2D()
-{
-    nodeCache[id] = false;
 }
 
 // void prim::Node::draw()

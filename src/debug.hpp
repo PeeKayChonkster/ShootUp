@@ -16,6 +16,7 @@ namespace prim
         inline static std::pair<int, int> textPosition = { 5, 50 };
         inline static std::vector<std::string> lines = {};
         inline static std::vector<std::string> persistentLines = {};
+        inline static raylib::Color textColor = { 255u, 255u, 255u, 200u };
     public:
         inline static int fontSize = 14;
 
@@ -35,10 +36,10 @@ namespace prim
         {
             uint i;
             for(i = 0u; i < persistentLines.size(); ++i)
-                DrawText(persistentLines[i].c_str(), textPosition.first, textPosition.second + (i + 1) * fontSize, fontSize, WHITE);
+                DrawText(persistentLines[i].c_str(), textPosition.first, textPosition.second + (i + 1) * fontSize, fontSize, textColor);
 
             for(uint j = 0u; j < lines.size(); ++i, ++j)
-                DrawText(lines[j].c_str(), textPosition.first, textPosition.second + (i + 1) * fontSize, fontSize, WHITE);
+                DrawText(lines[j].c_str(), textPosition.first, textPosition.second + (i + 1) * fontSize, fontSize, textColor);
             
             lines.clear();
         }

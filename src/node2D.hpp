@@ -2,13 +2,12 @@
 #define PRIM_NODE2D
 
 #include <string>
-#include <variant>
-#include <array>
 #include "transform2D.hpp"
 
 namespace prim
 {
     #define MAX_NODES 1000
+    #define NODE2D_INHERIT friend class App;
     #define START_OVERRIDE startChildren();
     #define UPDATE_OVERRIDE updateChildren(deltaTime);
     #define DRAW_OVERRIDE if(!visible) return; drawChildren();      // ?: Maybe override macros should call parent method instead of calling children methods?
@@ -43,14 +42,18 @@ namespace prim
         void updateChildren(float deltaTime);
         void drawChildren();
 
+        Node2D() = delete;
+        Node2D(const Node2D& other) = delete;
+        Node2D(std::string name);
+
+        friend class App;
+
     public:
+        virtual ~Node2D();
+
         prim::Transform2D transform;
         std::string name;
         bool visible = true;
-
-        Node2D();
-        Node2D(std::string name = "_noname_");
-        ~Node2D();
 
         uint16_t getId() const;
 
