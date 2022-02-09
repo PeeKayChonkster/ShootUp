@@ -16,6 +16,11 @@ void prim::InputController::update(float deltaTime)
     if(IsKeyDown(KEY_W)) target->transform.move({ 0.0f, -1.0f});
     if(IsKeyDown(KEY_Q)) target->transform.rotate(1.0f);
     if(IsKeyDown(KEY_E)) target->transform.rotate(-1.0f);
+    if(IsKeyDown(KEY_U)) target->transform.scaleUp({ 0.0f, 0.1f });
+    if(IsKeyDown(KEY_J)) target->transform.scaleUp({ 0.0f, -0.1f });
+    if(IsKeyDown(KEY_I)) target->transform.scaleUp({ 0.1f, 0.0f });
+    if(IsKeyDown(KEY_Y)) target->transform.scaleUp({ -0.1f, 0.0f });
+
 }
 
 ///////////////////////

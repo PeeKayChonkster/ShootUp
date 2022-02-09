@@ -81,6 +81,8 @@ private:
             }
             else if(interpolate)
             {
+                // TODO: Implement point interpolation.
+
                 //uint16_t prefFrame =
                 //uint16_t nextFrame = 
             }
@@ -104,16 +106,31 @@ public:
             delete animationStrips[i];
         }
     }
-
-    // inline static Animation* createAnimation(std::string name, float length, uint16_t frameCount)
-    // {
-    //     return new Animation(name, length, frameCount);
-    // }
+    
+    /*
+        * Create custom animation strip with arbitrary value to animate. Animation frames in the grid can be skipped, f.e.: {{0u, 12.3f},{5u, 1.8f}}.
+    */
 
     template<class T>
-    inline void createStripe(T* valueToAnimate, std::vector<AnimationPoint<T>>&& points)
+    inline void createStrip(T* valueToAnimate, std::vector<AnimationPoint<T>>&& points)
     {
         animationStrips.push_back(new AnimationStrip<T>(valueToAnimate, frameCount, std::move(points)));
+    }
+
+
+    /*
+        * Create simple uint16_t strip with equal offset between animation points.
+    */
+    inline void createStrip(uint16_t* valueToAnimate, uint16_t firstValue, uint16_t increment = 1u)
+    {
+        std::vector<AnimationPoint<uint16_t>> points;
+        points.push_back({ 0u, firstValue });
+        for(uint16_t i = 1u; i < frameCount; ++i)
+        {
+            AnimationPoint<uint16_t> point = {i, uint16_t(i * increment)};
+            points.emplace_back(std::move(point));
+        }
+        animationStrips.push_back(new AnimationStrip<uint16_t>(valueToAnimate, frameCount, std::move(points)));
     }
 
     inline void update(float playtime)

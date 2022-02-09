@@ -48,12 +48,12 @@ int prim::App::init()
 
     // TESTING //
     Node2D* player = createNode<Node2D>("player");
-    Sprite* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/PlayerIdleDown/PlayerIdleDown1.png", 2u, 1u);
+    Sprite* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/player/ManWalkRightSheet.png", 10u, 1u);
     InputController* playerController = createNode<InputController>("playerController", player);
     AnimationPlayer* playerAnimationPlayer = createNode<AnimationPlayer>("animationPlayer");
-    Animation* anim = playerAnimationPlayer->createAnimation("playerIdle", 1000.0f, 2u);
-    anim->createStripe(&(playerSprite->hframe), { { 0u, 0u }, { 1u, 1u } });
-    playerAnimationPlayer->play("playerIdle");
+    Animation* anim = playerAnimationPlayer->createAnimation("playerWalk", 1000.0f, 10u);
+    anim->createStrip(&(playerSprite->hframe), 0u);
+    playerAnimationPlayer->play("playerWalk");
 
 
     player->transform.addChild(playerSprite);

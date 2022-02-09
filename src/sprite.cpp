@@ -24,9 +24,13 @@ void prim::Sprite::draw()
     raylib::Vector2 globalScale = transform.getGlobalScale();
     destRec.width *= globalScale.x;
     destRec.height *= globalScale.y;
-    raylib::Vector2 origin(srcRect.x + srcRect.GetWidth() * 0.5f, srcRect.y + srcRect.GetHeight() * 0.5f);
+    // To remember: origin is local to the sourceRec!!!
+    raylib::Vector2 origin(srcRect.GetWidth() * 0.5f, srcRect.GetHeight() * 0.5f);
     origin.x *= globalScale.x;
     origin.y *= globalScale.y;
-    Debug::printLine("vframe: " + std::to_string(vframe));
     texture.Draw(srcRect, destRec, origin, transform.getGlobalRotation(), tint);
+    // DEBUG //
+    Debug::printLine("hframe: " + std::to_string(hframe));
+    DrawPixel(transform.getGlobalPosition().x, transform.getGlobalPosition().y, RED);
+    ///////////
 }
