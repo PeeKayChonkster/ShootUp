@@ -33,6 +33,12 @@ class Animation
 {
 private:
 
+    Animation() = delete;
+    Animation(const Animation& other) = delete;
+    Animation(std::string name, float length, uint16_t frameCount) : name(name), length(length), frameCount(frameCount), timestep(length / frameCount) {}
+
+    friend class AnimationPlayer;
+
     //------ HELPER CLASSES ------//
     class AnimationStripBase
     {
@@ -88,10 +94,6 @@ protected:
     float length;
     uint16_t frameCount;
     float timestep;
-
-    Animation() = delete;
-    Animation(const Animation& other) = delete;
-    Animation(std::string name, float length, uint16_t frameCount) : name(name), length(length), frameCount(frameCount), timestep(length / frameCount) {}
 public:
     bool loop = true;
 
@@ -103,10 +105,10 @@ public:
         }
     }
 
-    inline static Animation* createAnimation(std::string name, float length, uint16_t frameCount)
-    {
-        return new Animation(name, length, frameCount);
-    }
+    // inline static Animation* createAnimation(std::string name, float length, uint16_t frameCount)
+    // {
+    //     return new Animation(name, length, frameCount);
+    // }
 
     template<class T>
     inline void createStripe(T* valueToAnimate, std::vector<AnimationPoint<T>>&& points)

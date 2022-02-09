@@ -51,9 +51,8 @@ int prim::App::init()
     Sprite* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/PlayerIdleDown/PlayerIdleDown1.png", 2u, 1u);
     InputController* playerController = createNode<InputController>("playerController", player);
     AnimationPlayer* playerAnimationPlayer = createNode<AnimationPlayer>("animationPlayer");
-    Animation* anim = Animation::createAnimation("playerIdle", 1000.0f, 2u);
+    Animation* anim = playerAnimationPlayer->createAnimation("playerIdle", 1000.0f, 2u);
     anim->createStripe(&(playerSprite->hframe), { { 0u, 0u }, { 1u, 1u } });
-    playerAnimationPlayer->pushAnimation(anim);
     playerAnimationPlayer->play("playerIdle");
 
 

@@ -31,6 +31,7 @@ private:
 public:
     AnimationPlayer(std::string name = "_noname_");
     virtual ~AnimationPlayer();
+    Animation* createAnimation(std::string name, float length, uint16_t frameCount);
     void pushAnimation(Animation* anim);
     void play();
     void play(std::string_view animationName);

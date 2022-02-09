@@ -32,6 +32,14 @@ prim::AnimationPlayer::~AnimationPlayer()
     }
 }
 
+prim::Animation* prim::AnimationPlayer::createAnimation(std::string name, float length, uint16_t frameCount)
+{
+    Animation* anim = new Animation(name, length, frameCount);
+    pushAnimation(anim);
+    return anim;
+}
+
+
 void prim::AnimationPlayer::pushAnimation(Animation* anim)
 {
     // If animation isn't already exists in the vector
@@ -82,7 +90,11 @@ void prim::AnimationPlayer::update(float deltaTime)
     if(playing)
     {
         playtime += deltaTime;
-        if(playtime > currentAnimation->getLength()) playtime = 0.0f;
+        if(playtime > currentAnimation->getLength()) 
+        {
+            playtime = 0.0f;
+            if(!currentAnimation->loop) stop();
+        }
         currentAnimation->update(playtime);
     }
 }
