@@ -6,7 +6,7 @@
 #include <iostream>
 #include "debug.hpp"
 #include <algorithm>
-#include "animation.hpp"
+#include "node_library.hpp"
 
 prim::App::App(uint16_t windowWidth, uint16_t windowHeight, std::string windowName): window(windowWidth, windowHeight, windowName) 
 {
@@ -50,10 +50,10 @@ int prim::App::init()
     Node2D* player = createNode<Node2D>("player");
     Node2D* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/PlayerIdleDown/PlayerIdleDown1.png");
     Node2D* playerController = createNode<InputController>("playerController", player);
+    Animation* anim = Animation::createAnimation("playerIdle", 1.0f, 2u);
+    std::vector<int> test;
+    test.emp
 
-    std::vector<AnimationPoint<uint16_t>> animPoints { { 0.0f, 0u }, { 1.0f, 1u } };
-    AnimationOneStrip<uint16_t> playerIdleAnim("player_idle", std::move(animPoints));
-    
 
     player->transform.addChild(playerSprite);
     player->transform.addChild(playerController);
