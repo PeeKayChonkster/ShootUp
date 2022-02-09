@@ -17,7 +17,7 @@ prim::App::~App()
 {
     for(int i = 0; i < nodes.size(); ++i)
     {
-        std::cout << "Deleted node: " << nodes[i]->name << ". ID: " << nodes[i]->getId() << std::endl;
+        std::cout << "Deleted node: " << nodes[i]->name << "; ID: " << nodes[i]->getId() << std::endl;
         delete nodes[i];
     }
 }
@@ -48,17 +48,19 @@ int prim::App::init()
 
     // TESTING //
     Node2D* player = createNode<Node2D>("player");
-    Node2D* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/PlayerIdleDown/PlayerIdleDown1.png");
-    Node2D* playerController = createNode<InputController>("playerController", player);
-    Animation* anim = Animation::createAnimation("playerIdle", 1.0f, 2u);
-    std::vector<int> test;
-    test.emp
+    Sprite* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/PlayerIdleDown/PlayerIdleDown1.png", 2u, 1u);
+    InputController* playerController = createNode<InputController>("playerController", player);
+    AnimationPlayer* playerAnimationPlayer = createNode<AnimationPlayer>("animationPlayer");
+    Animation* anim = Animation::createAnimation("playerIdle", 1000.0f, 2u);
+    anim->createStripe(&(playerSprite->hframe), { { 0u, 0u }, { 1u, 1u } });
+    playerAnimationPlayer->pushAnimation(anim);
+    playerAnimationPlayer->play("playerIdle");
 
 
     player->transform.addChild(playerSprite);
     player->transform.addChild(playerController);
+    player->transform.addChild(playerAnimationPlayer);
     root->transform.addChild(player);
-    std::vector<Sprite> test;
     /////////////
 
     return 0;

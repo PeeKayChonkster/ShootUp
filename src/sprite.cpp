@@ -1,5 +1,6 @@
 #include "sprite.hpp"
 #include <algorithm>
+#include "debug.hpp"
 
 prim::Sprite::Sprite(std::string nodeName, std::string texturePath): Sprite(nodeName, texturePath, 1u, 1u) {}
 
@@ -26,5 +27,6 @@ void prim::Sprite::draw()
     raylib::Vector2 origin(srcRect.x + srcRect.GetWidth() * 0.5f, srcRect.y + srcRect.GetHeight() * 0.5f);
     origin.x *= globalScale.x;
     origin.y *= globalScale.y;
+    Debug::printLine("vframe: " + std::to_string(vframe));
     texture.Draw(srcRect, destRec, origin, transform.getGlobalRotation(), tint);
 }

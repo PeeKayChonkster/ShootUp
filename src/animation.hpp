@@ -5,6 +5,10 @@
 #include <cmath>
 #include <cinttypes>
 #include <string_view>
+#include <optional>
+#include <algorithm>
+#include "debug.hpp"
+#include "prim_exception.hpp"
 
 namespace prim
 {
@@ -20,25 +24,22 @@ T lerp(const T& a, const T& b, float t)
 template<class T>
 struct AnimationPoint
 {
-    float timePoint;
+    uint16_t frame;
     T value;
 };
-
-
-
 
 
 class Animation
 {
 private:
 
-        //------ HELPER CLASSES ------//
+    //------ HELPER CLASSES ------//
     class AnimationStripBase
     {
     private:
     public:
         bool interpolate = false;
-        virtual void updateCurrentPoint(float playtime) = 0;
+        virtual void setFrame(uint16_t frame) = 0;
     };
 
 
@@ -46,76 +47,37 @@ private:
     class AnimationStrip : public AnimationStripBase
     {
     private:
-        std::vector<AnimationPoint<T>> animationPoints;
-        AnimationPoint<T> currentPoint;
-        T* valueToAnimate
-
-        /*
-        * Given the playtime, floor it to the left nearest animation point at return that point
-        */
-        inline AnimationPoint<T> floorCurrentPoint(float playtime) const
-        {
-            static_assert(!animationPoints.empty(), "Trying to update empty animation strip.");
-            if(playTime <= animationPoints[0].timePoint) return animationPoints[0];
-            if(playTime >= animationPoints.back().timePoint) return animationPoints.back();
-            for(int i = 0; i < animationPoints.size(); ++i)
-            {
-                if(animationPoints[i].timePoint <= playTime && animationPoints[i+1] > playTime)
-                {
-                    currentPoint = animationPoints[i];
-                    return currentPoint;
-                }
-            }
-        }
-
-        /*
-        * Given the playtime, find two closest animation points and interpolate between them
-        */
-        inline AnimationPoint<T> interpolateCurrentPoint(float playtime)
-        {
-            static_assert(!animationPoints.empty(), "Trying to update empty animation strip.");
-            if(playtime == 0.0f) return animationPoints[0];
-            if(playtime >= animationPoints.back().timePoint) return animationPoints.back();
-            uint16_t firstIdx, secondIdx = 0u;
-            for(uint16_t i = 0; i < animationPoints.size(); ++i)
-            {
-                if(playtime >= animationPoints[i].timePoint && playtime <= animationPoints[i+1].timePoint)
-                {
-                    firstIdx = i;
-                    secondIdx = i + 1;
-                    break;
-                }
-            }
-            float timeBetweenPoints = animationPoints[secondIdx].timePoint - animationPoints[firstIdx].timePoint;
-            float playtimeOffset = playtime - animationPoints[firstIdx].timePoint;
-            return AnimationPoint<T> { playtime, lerp(animationPoints[firstIdx].value, animationPoints[secondIdx].value, playtimeOffset / timeBetweenPoints)};
-        }
+        std::vector<std::optional<T>> animationValues;
+        T* valueToAnimate;
+        uint16_t currentFrame = 0u;
 
     public:
         AnimationStrip() = delete;
         AnimationStrip(const AnimationStrip& other) = delete;
-        AnimationStrip(T* valueToAnimate, std::vector<AnimationPoint<T>>&& points) : 
-                animationPoints(std::move(points)), 
-                currentPoint(animationPoints[0]), 
-                valueToAnimate(valueToAnimate) 
-                {}
-
-        inline virtual void updateCurrentPoint(float playtime) override
+        AnimationStrip(T* valueToAnimate, uint16_t gridCount, std::vector<AnimationPoint<T>>&& points) : 
+                valueToAnimate(valueToAnimate),
+                animationValues(gridCount, std::nullopt)
         {
-            if(interpolate)
+            for(auto& p : points)
             {
-                currentPoint = interpolateCurrentPoint(playtime);
+                if(p.frame > gridCount - 1u) throw PRIM_EXCEPTION("Adding animation point with frameNumber higher than animation frameCount.");
+                animationValues[p.frame] = p.value;
             }
-            else
-            {
-                currentPoint = floorCurrentPoint(playtime);
-            }
-            *valueToAnimate = currentPoint.value;
         }
 
-        inline AnimationPoint<T> getCurrentPoint() const
+        inline void setFrame(uint16_t frame) override
         {
-            return currentPoint;
+            if(frame == currentFrame) return;
+            if(animationValues[frame])
+            {
+                *valueToAnimate = animationValues[frame].value();
+                currentFrame = frame;
+            }
+            else if(interpolate)
+            {
+                //uint16_t prefFrame =
+                //uint16_t nextFrame = 
+            }
         }
     };
     //---------------------------------------------------//
@@ -123,7 +85,6 @@ private:
 protected:
     std::string name;
     std::vector<AnimationStripBase*> animationStrips;
-    float playtime = 0.0f;
     float length;
     uint16_t frameCount;
     float timestep;
@@ -132,7 +93,9 @@ protected:
     Animation(const Animation& other) = delete;
     Animation(std::string name, float length, uint16_t frameCount) : name(name), length(length), frameCount(frameCount), timestep(length / frameCount) {}
 public:
-    ~Animation()
+    bool loop = true;
+
+    virtual ~Animation()
     {
         for(int i = 0; i < animationStrips.size(); ++i)
         {
@@ -146,23 +109,21 @@ public:
     }
 
     template<class T>
-    inline void createStrip(T* valueToAnimate, std::vector<AnimationPoint<T>>&& points)
+    inline void createStripe(T* valueToAnimate, std::vector<AnimationPoint<T>>&& points)
     {
-        animationStrips.push_back(new AnimationStrip<T>(valueToAnimate, std::move(points)));
+        animationStrips.push_back(new AnimationStrip<T>(valueToAnimate, frameCount, std::move(points)));
     }
 
-    inline void update()
+    inline void update(float playtime)
     {
-        for(auto& strip : animationStrips)
-        {
-            strip->updateCurrentPoint(playtime);
-        }
+        uint16_t frame = std::clamp<uint16_t>(std::floor(playtime / timestep), 0u, frameCount);
+        Debug::printLine("animFrame: " + std::to_string(frame));
+        Debug::printLine("playtime: " + std::to_string(playtime));
+        std::for_each(animationStrips.begin(), animationStrips.end(), [&frame](AnimationStripBase* strip){ strip->setFrame(frame); });
     }
 
-    inline std::string_view getName() const
-    {
-        return name;
-    }
+    inline std::string_view getName() const { return name; }
+    inline float getLength() const { return length; }
 };
 
 } // namespace prim

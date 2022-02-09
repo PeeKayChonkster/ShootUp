@@ -26,10 +26,11 @@ class AnimationPlayer : public Node2D
 private:
     float playtime = 0.0f;
     std::vector<Animation*> animations;
-    Animation* currentAnimation;
+    Animation* currentAnimation = nullptr;
     bool playing = false;
 public:
-    ~AnimationPlayer();
+    AnimationPlayer(std::string name = "_noname_");
+    virtual ~AnimationPlayer();
     void pushAnimation(Animation* anim);
     void play();
     void play(std::string_view animationName);

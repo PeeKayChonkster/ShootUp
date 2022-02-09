@@ -1,5 +1,6 @@
 #include "node_library.hpp"
 #include <algorithm>
+#include <iostream>
 
 /// InputController ///
 
@@ -21,6 +22,8 @@ void prim::InputController::update(float deltaTime)
 
 /// AnimationPlayer ///
 
+prim::AnimationPlayer::AnimationPlayer(std::string name): Node2D(name) {}
+
 prim::AnimationPlayer::~AnimationPlayer()
 {
     for(int i = 0; i < animations.size(); ++i)
@@ -32,7 +35,7 @@ prim::AnimationPlayer::~AnimationPlayer()
 void prim::AnimationPlayer::pushAnimation(Animation* anim)
 {
     // If animation isn't already exists in the vector
-    if(std::find_if(animations.begin(), animations.end(), [&anim] (const Animation* a) { a->getName() == anim->getName(); }) == animations.end())
+    if(std::find_if(animations.begin(), animations.end(), [&anim] (const Animation* a) { return a->getName() == anim->getName(); }) == animations.end())
     {
         animations.push_back(anim);
     }
@@ -49,11 +52,15 @@ void prim::AnimationPlayer::play()
 void prim::AnimationPlayer::play(std::string_view animationName)
 {
     if(currentAnimation && currentAnimation->getName() == animationName) return;
-    auto anim = std::find_if(animations.begin(), animations.end(), [&animationName] (const Animation* a) { a->getName() == animationName; });
+    auto anim = std::find_if(animations.begin(), animations.end(), [&animationName] (const Animation* a) { return a->getName() == animationName; });
     if(anim != animations.end())
     {
         currentAnimation = *anim;
         playing = true;
+    }
+    else
+    {
+        std::cerr << "Couldn't find animation with name: " << animationName << std::endl;
     }
 }
 
@@ -75,7 +82,8 @@ void prim::AnimationPlayer::update(float deltaTime)
     if(playing)
     {
         playtime += deltaTime;
-        
+        if(playtime > currentAnimation->getLength()) playtime = 0.0f;
+        currentAnimation->update(playtime);
     }
 }
 

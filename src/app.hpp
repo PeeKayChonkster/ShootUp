@@ -21,8 +21,7 @@ private:
     void deleteNode(Node2D* node);
     void deleteNodeChildren(Node2D* node);
 public:
-    App() = delete;
-    App(const App&& other) = delete;
+    App(const App& other) = delete;
     App(uint16_t windowWidth, uint16_t windowHeight, std::string windowName);
     ~App();
     inline Node2D* getRoot() { return root; }
