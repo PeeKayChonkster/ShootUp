@@ -45,6 +45,26 @@ public:
 
     void addChild(Node* child);
     void removeChild(Node* child);
+
+    template<class T>
+    inline T* getChild(std::string name) const
+    {
+        T* node = nullptr;
+        for(int i = 0; i < children.size(); ++i)
+        {
+            if(children[i]->name == name)
+            {
+                node = dynamic_cast<T*>(children[i]);
+                if(node) return node;
+            }
+        }
+        for(const auto& c : children)
+        {
+            node = c->getChild<T>(name);
+            if(node) return node;
+        }
+        return nullptr;
+    }
 };
 
 } // namespace prim

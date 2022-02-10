@@ -31,7 +31,7 @@ public:
     int run();
 
     template<class T = Node, class... Args>
-    T* createNode(std::string name = "_noname_", Args&&... args)
+    T* createNode(std::string name, Args&&... args)
     {
         if(std::is_base_of<Node, T>::value)
         {
