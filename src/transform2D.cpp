@@ -3,20 +3,44 @@
 #include <algorithm>
 #include "node2D.hpp"
 
+prim::Transform2D::Transform2D(Node2D* owner) : owner(owner) {}
+
 raylib::Vector2 prim::Transform2D::getGlobalPosition() const
 {
-    return parent? parent->getGlobalPosition() + getLocalPosition() : getLocalPosition();
+    Node2D* parent = dynamic_cast<Node2D*>(owner->parent);
+    if(parent)
+    {
+        return parent->transform.getGlobalPosition() + getLocalPosition();
+    }
+    else
+    {
+        return getLocalPosition();
+    }
 }
+    
 
 float prim::Transform2D::getGlobalRotation() const
 {
-    return parent? parent->getGlobalRotation() + getLocalRotation() : getLocalRotation();
+    Node2D* parent = dynamic_cast<Node2D*>(owner->parent);
+    if(parent)
+    {
+        return parent->transform.getGlobalRotation() + getLocalRotation(); 
+    }
+    else
+    {
+        return getLocalRotation();
+    }
 }
 
 raylib::Vector2 prim::Transform2D::getGlobalScale() const
 {
+    Node2D* parent = dynamic_cast<Node2D*>(owner->parent);
     raylib::Vector2 localScale = getLocalScale();
-    raylib::Vector2 globalScale = parent? parent->getGlobalScale() : raylib::Vector2::One();
+    raylib::Vector2 globalScale = raylib::Vector2::One();
+    if(parent)
+    {
+        globalScale = parent->transform.getGlobalScale();
+    }
     return raylib::Vector2{ localScale.x * globalScale.x, localScale.y * globalScale.y };
 }
 
@@ -92,25 +116,4 @@ void prim::Transform2D::lookAt(raylib::Vector2 point)
 raylib::Transform2D prim::Transform2D::getRaylibTransform() const
 {
     return transform;
-}
-
-void prim::Transform2D::addChild(Node2D* child)
-{
-    auto predicate = [&](Transform2D* ch) { return ch->node->getId() == child->getId(); };
-    if(std::find_if(children.begin(), children.end(), predicate) == children.end())
-    {
-        children.push_back(&child->transform);
-        child->transform.parent = this;
-    }
-}
-
-void prim::Transform2D::removeChild(Node2D* child)
-{
-    auto predicate = [&](Transform2D* ch) { return ch->node->getId() == child->getId(); };
-    auto childIter = std::find_if(children.begin(), children.end(), predicate);
-    if(childIter != children.end())
-    {
-        children.erase(childIter);
-        child->transform.parent = nullptr;
-    }
 }

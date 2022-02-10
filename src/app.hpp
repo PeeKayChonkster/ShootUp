@@ -1,7 +1,7 @@
 #ifndef PRIM_APP
 #define PRIM_APP
 
-#include "node2D.hpp"
+#include "node.hpp"
 #include "node_library.hpp"
 #include <raylib-cpp.hpp>
 #include <type_traits>
@@ -13,27 +13,27 @@ namespace prim
 class App
 {
 private:
-    Node2D* root;
+    Node* root;
     raylib::Window window;
-    std::vector<Node2D*> nodes;
+    std::vector<Node*> nodes;
     float deltaTime;
     int init();
-    void deleteNode(Node2D* node);
-    void deleteNodeChildren(Node2D* node);
+    void deleteNode(Node* node);
+    void deleteNodeChildren(Node* node);
 public:
     App(const App& other) = delete;
     App(uint16_t windowWidth, uint16_t windowHeight, std::string windowName);
     ~App();
-    inline Node2D* getRoot() { return root; }
-    inline void addChildToRoot(Node2D* child) { root->transform.addChild(child); }
-    inline void removeChildFromRoot(Node2D* child) { root->transform.removeChild(child); }
+    inline Node* getRoot() { return root; }
+    inline void addChildToRoot(Node* child) { root->addChild(child); }
+    inline void removeChildFromRoot(Node* child) { root->removeChild(child); }
     inline float getDeltaTime() const { return deltaTime; };
     int run();
 
-    template<class T = Node2D, class... Args>
+    template<class T = Node, class... Args>
     T* createNode(std::string name = "_noname_", Args&&... args)
     {
-        if(std::is_base_of<Node2D, T>::value)
+        if(std::is_base_of<Node, T>::value)
         {
             T* newNode = new T(name, std::forward<Args>(args)...);
             nodes.push_back(newNode);

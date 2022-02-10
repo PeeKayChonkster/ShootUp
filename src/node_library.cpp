@@ -4,7 +4,8 @@
 
 /// InputController ///
 
-prim::InputController::InputController(std::string name, Node2D* target): Node2D(name), target(target) {}
+prim::InputController::InputController(std::string name, Node2D* target): Node(name), target(target) {}
+prim::InputController::~InputController() {}
 
 void prim::InputController::update(float deltaTime)
 {
@@ -27,7 +28,7 @@ void prim::InputController::update(float deltaTime)
 
 /// AnimationPlayer ///
 
-prim::AnimationPlayer::AnimationPlayer(std::string name): Node2D(name) {}
+prim::AnimationPlayer::AnimationPlayer(std::string name): Node(name) {}
 
 prim::AnimationPlayer::~AnimationPlayer()
 {

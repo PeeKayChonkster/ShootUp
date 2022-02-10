@@ -22,23 +22,23 @@ prim::App::~App()
     }
 }
 
-void prim::App::deleteNode(Node2D* node)
+void prim::App::deleteNode(Node* node)
 {
     deleteNodeChildren(node);
     std::cout << "Deleted node: " << node->name << std::endl;
-    auto iter = std::find_if(nodes.begin(), nodes.end(), [&] (const Node2D* n) { return n->getId() == node->getId(); });
+    auto iter = std::find_if(nodes.begin(), nodes.end(), [&] (const Node* n) { return n->getId() == node->getId(); });
     if(iter != nodes.end()) nodes.erase(iter);
     delete node;
 }
 
 // Helper function for recursion
-void prim::App::deleteNodeChildren(prim::Node2D* node)
+void prim::App::deleteNodeChildren(prim::Node* node)
 {
-    for(int i = 0; i < node->transform.children.size(); ++i)
+    for(int i = 0; i < node->children.size(); ++i)
     {
-        deleteNodeChildren(node->transform.children[i]->node);
-        std::cout << "Deleted node: " << node->transform.children[i]->node->name << std::endl;
-        delete node->transform.children[i]->node;
+        deleteNodeChildren(node->children[i]);
+        std::cout << "Deleted node: " << node->children[i]->name << std::endl;
+        delete node->children[i];
     }
 }
 
@@ -56,10 +56,10 @@ int prim::App::init()
     playerAnimationPlayer->play("playerWalk");
 
 
-    player->transform.addChild(playerSprite);
-    player->transform.addChild(playerController);
-    player->transform.addChild(playerAnimationPlayer);
-    root->transform.addChild(player);
+    player->addChild(playerSprite);
+    player->addChild(playerController);
+    player->addChild(playerAnimationPlayer);
+    root->addChild(player);
     /////////////
 
     return 0;

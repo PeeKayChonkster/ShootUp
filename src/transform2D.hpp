@@ -1,7 +1,6 @@
 #ifndef PRIM_TRANSFORM2D
 #define PRIM_TRANSFORM2D
 
-#include <vector>
 #include <raylib-cpp.hpp>
 
 
@@ -11,10 +10,12 @@ namespace prim
     {
     private:
         raylib::Transform2D transform;
+
     public:
-        class Node2D* node;
-        Transform2D* parent;
-        std::vector<Transform2D*> children;
+        class Node2D* owner;
+
+        Transform2D(Node2D* owner);
+        Transform2D(const Transform2D& other) = delete;
 
         raylib::Vector2 getGlobalPosition() const;
         float getGlobalRotation() const;
@@ -38,10 +39,6 @@ namespace prim
         void lookAt(raylib::Vector2 point);
 
         raylib::Transform2D getRaylibTransform() const;
-
-        // this function is dangerous, child transform pointer could be non-constant (if it's inside of std::vector for example)
-        void addChild(Node2D* child);
-        void removeChild(Node2D* child);
     };
 }
 

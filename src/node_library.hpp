@@ -7,21 +7,20 @@
 namespace prim
 {
 
-class InputController : public Node2D
+class InputController : public Node
 {
 private:
-    NODE2D_INHERIT
-    
     Node2D* target;
 protected:
+public:
     InputController() = delete;
     InputController(std::string name, Node2D* target);
-public:
+    virtual ~InputController();
     virtual void update(float deltaTime) override;
 };
 
 
-class AnimationPlayer : public Node2D
+class AnimationPlayer : public Node
 {
 private:
     float playtime = 0.0f;
