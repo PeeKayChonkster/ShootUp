@@ -1,12 +1,13 @@
 #include "sprite.hpp"
 #include <algorithm>
 #include "debug.hpp"
+#include "resman.hpp"
 
 prim::Sprite::Sprite(std::string nodeName, std::string texturePath): Sprite(nodeName, texturePath, 1u, 1u) {}
 
 prim::Sprite::Sprite(std::string nodeName, std::string texturePath, uint16_t hframeCount, uint16_t vframeCount): 
     Node2D(nodeName), 
-    texture(texturePath), 
+    texture(Resman::loadTexture(texturePath)), 
     hframeCount(hframeCount),
     vframeCount(vframeCount)
 {

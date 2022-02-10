@@ -17,7 +17,7 @@ namespace prim
 template<class T>
 T lerp(const T& a, const T& b, float t)
 {
-    return a + t(b - a);
+    return a + t*(b - a);
 }
 
 
@@ -83,8 +83,22 @@ private:
             {
                 // TODO: Implement point interpolation.
 
-                //uint16_t prefFrame =
-                //uint16_t nextFrame = 
+                uint16_t nextFrame = 0u;
+                uint16_t nextFrameOffset = 0u;
+                for(uint16_t i = currentFrame + 1u; i < animationValues.size(); ++i)
+                {
+                    ++nextFrameOffset;
+                    if(animationValues[i])
+                    {
+                        nextFrame = i;
+                        break;
+                    }
+                }
+                if(nextFrame)
+                {
+                    float ratio = (nextFrame - frame) / nextFrameOffset;
+                    *valueToAnimate = lerp(animationValues[currentFrame].value(), animationValues[nextFrame].value(), (nextFrame - frame) / nextFrame);
+                }
             }
         }
     };

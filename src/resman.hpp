@@ -101,8 +101,9 @@ private:
         return true;
     }
 public:
-    static bool packFolder(std::string folderPath, std::string outPath = "." + separator + packageName)
+    static bool packFolder(std::string folderPath, std::string outPath = ".")
     {
+        outPath += separator + packageName;
         fs::path fPath(folderPath);
         fPath.make_preferred();
         if(!fs::exists(fPath) || !fs::is_directory(fPath)) return false;
@@ -127,11 +128,12 @@ public:
         return true;
     }
 
-    static bool loadResourceFile(std::string path = "." + separator + packageName)
+    static bool loadResourceFile(std::string path = ".")
     {
+        path += separator + packageName;
         packagePath = path;
         std::ifstream ifstream(packagePath, std::ios::binary);
-        if(!ifstream.good()) throw PRIM_EXCEPTION("Resman couldn't load package.");
+        if(!ifstream.good()) return false;
         // char buffer
         char c = 0;
         std::string rawData;
@@ -228,13 +230,17 @@ public:
         }
     }
 
-    // Functions, specific to RAYLIB
-    static raylib::Texture loadTexture(std::string path)
+    /// Specific to raylib ///
+    static raylib::Texture2D loadTexture(std::string path)
     {
-        Resfile* fileData = getFile(path);
-        if(!fileData) throw PRIM_EXCEPTION("File loading failed.");
-        return raylib::Image(fs::path(path).extension().string(), fileData->data.get(), fileData->size).LoadTexture();
+        fs::path p(path);
+        p.make_preferred();
+        Resfile* data = getFile(p.c_str());
+        if(!data) throw PRIM_EXCEPTION("Resman couldn't load file with path: " + std::string(p.c_str()));
+        raylib::Image im(p.extension(), data->data.get(), data->size);
+        return raylib::Texture2D(im);
     }
+    //////////////////////////
 };
 }
 
