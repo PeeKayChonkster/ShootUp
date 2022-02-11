@@ -9,6 +9,8 @@
 #include <algorithm>
 #include "debug.hpp"
 #include "prim_exception.hpp"
+#include "resman.hpp"
+#include "sprite.hpp"
 
 namespace prim
 {
@@ -29,17 +31,31 @@ struct AnimationPoint
 };
 
 
-class Animation
+class AnimationBase
+{
+protected:
+    std::string name;
+    float length;
+    uint16_t frameCount;
+
+public:
+    AnimationBase(std::string name, float length, uint16_t frameCount) : name(name), length(length), frameCount(frameCount) {}
+    virtual ~AnimationBase() {}
+
+    bool loop = true;
+    bool mirrored = false;
+    inline std::string_view getName() const { return name; }
+    inline float getLength() const { return length; }
+    virtual void update(float playtime) = 0;
+    virtual void reset() = 0;
+};
+
+
+class Animation : public AnimationBase
 {
 private:
 
-    Animation() = delete;
-    Animation(const Animation& other) = delete;
-    Animation(std::string name, float length, uint16_t frameCount) : name(name), length(length), frameCount(frameCount), timestep(length / frameCount) {}
-
-    friend class AnimationPlayer;
-
-    //------ HELPER CLASSES ------//
+    //---------------- HELPER CLASSES ------------------//
     class AnimationStripBase
     {
     private:
@@ -102,18 +118,15 @@ private:
             }
         }
     };
-    //---------------------------------------------------//
+    //---------------------------------------------------// HELPER CLASSES
 
 protected:
-    std::string name;
     std::vector<AnimationStripBase*> animationStrips;
-    float length;
-    uint16_t frameCount;
     float timestep;
 public:
-    bool loop = true;
-
-    virtual ~Animation()
+    Animation(const Animation& other) = delete;
+    Animation(std::string name, float length, uint16_t frameCount) : AnimationBase(name, length, frameCount), timestep(length/frameCount) {}
+    virtual ~Animation() override
     {
         for(int i = 0; i < animationStrips.size(); ++i)
         {
@@ -147,16 +160,69 @@ public:
         animationStrips.push_back(new AnimationStrip<uint16_t>(valueToAnimate, frameCount, std::move(points)));
     }
 
-    inline void update(float playtime)
+    inline void update(float playtime) override
     {
         uint16_t frame = std::clamp<uint16_t>(std::floor(playtime / timestep), 0u, frameCount);
+        /// DEBUG ///
+        Debug::printLine("Animation: " + name);
         Debug::printLine("animFrame: " + std::to_string(frame));
         Debug::printLine("playtime: " + std::to_string(playtime));
+        /////////////
         std::for_each(animationStrips.begin(), animationStrips.end(), [&frame](AnimationStripBase* strip){ strip->setFrame(frame); });
     }
 
-    inline std::string_view getName() const { return name; }
-    inline float getLength() const { return length; }
+    inline void reset() override {}
+
+    inline uint16_t getFrameCount() const { return frameCount; }
+};
+
+
+class SpriteAnimation : public AnimationBase
+{
+private:
+    std::vector<raylib::Texture2D*> textures;
+    float timestep;
+    Sprite* target;
+    uint16_t currentFrame = 0u;
+    raylib::Texture2D* initialTexture = nullptr;
+
+public:
+    SpriteAnimation(std::string name, float length, Sprite* target) : AnimationBase(name, length, 0u), timestep(length), target(target), initialTexture(target->texture) {}
+    virtual ~SpriteAnimation() override
+    {
+        std::for_each(textures.begin(), textures.end(), [](raylib::Texture2D* texture){ delete texture; });
+    }
+
+
+    /*
+        * Load image file from disk and push into animation.
+    */
+    inline void pushImage(std::string imagePath)
+    {
+        textures.push_back(Resman::loadTexture(imagePath));
+        ++frameCount;
+        timestep = length / frameCount;
+    }
+
+    inline void update(float playtime) override
+    {
+        uint16_t frame = std::clamp<uint16_t>(std::floor(playtime / timestep), 0u, frameCount);
+        /// DEBUG ///
+        Debug::printLine("Animation: " + name);
+        Debug::printLine("animFrame: " + std::to_string(frame));
+        Debug::printLine("playtime: " + std::to_string(playtime));
+        /////////////
+        if(frame != currentFrame)
+        {
+            target->swapTexture(textures[frame]);
+            currentFrame = frame;
+        }
+    }
+
+    inline void reset() override
+    {
+        target->swapTexture(initialTexture);
+    }
 };
 
 } // namespace prim

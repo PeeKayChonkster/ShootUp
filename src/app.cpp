@@ -46,21 +46,38 @@ int prim::App::init()
 {
     window.SetTargetFPS(60);
 
+    
+
     // TESTING //
     Node2D* player = createNode<Node2D>("player");
-    Sprite* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/player/ManWalkRightSheet.png", 10u, 1u);
+    Sprite* playerSprite = createNode<Sprite>("playerSprite", "/home/prim/Projects/C++/ShootUp/project/res/textures/player/idle/ManIdle.png", 1u, 1u);
     InputController* playerController = createNode<InputController>("playerController", player);
     AnimationPlayer* playerAnimationPlayer = createNode<AnimationPlayer>("animationPlayer");
-    Animation* anim = playerAnimationPlayer->createAnimation("playerWalk", 1000.0f, 10u);
-    anim->createStrip(&(playerSprite->hframe), 0u);
-    playerAnimationPlayer->play("playerWalk");
 
+    SpriteAnimation* animIdle = playerAnimationPlayer->createAnimation("idle", 10000.0f, playerSprite);
+    animIdle->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/idle/ManIdle.png");
+
+    SpriteAnimation* animWalk = playerAnimationPlayer->createAnimation("walk", 1000.0f, playerSprite);
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight1.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight2.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight3.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight4.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight5.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight6.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight7.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight8.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight9.png");
+    animWalk->pushImage("/home/prim/Projects/C++/ShootUp/project/res/textures/player/walk/ManWalkRight10.png");
 
     player->addChild(playerSprite);
     player->addChild(playerController);
     player->addChild(playerAnimationPlayer);
+    player->transform.move(raylib::Vector2(500.0f, 500.0f));
     root->addChild(player);
     /////////////
+
+    // Start all nodes
+    root->start();
 
     return 0;
 }
@@ -86,5 +103,6 @@ int prim::App::run()
     }
 
     deltaTimer.reset();
+    Resman::free();
     return 0;
 }

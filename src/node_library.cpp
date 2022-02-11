@@ -10,7 +10,17 @@ prim::InputController::~InputController() {}
 void prim::InputController::update(float deltaTime)
 {
     UPDATE_OVERRIDE
-
+    if(IsKeyDown(KEY_D) || IsKeyDown(KEY_S) || IsKeyDown(KEY_W))
+    {
+        targetAnimPlayer->play("walk");
+    }
+    else if(IsKeyDown(KEY_A))
+    {
+        targetAnimPlayer->play("walk");
+    }
+    else
+        targetAnimPlayer->play("idle");
+    
     if(IsKeyDown(KEY_D)) target->transform.move({ 1.0f, 0.0f});
     if(IsKeyDown(KEY_S)) target->transform.move({ 0.0f, 1.0f});
     if(IsKeyDown(KEY_A)) target->transform.move({ -1.0f, 0.0f});
@@ -24,7 +34,16 @@ void prim::InputController::update(float deltaTime)
 
 }
 
+void prim::InputController::start()
+{
+    START_OVERRIDE;
+
+    targetAnimPlayer = target->getChild<AnimationPlayer>("animationPlayer");
+    if(!targetAnimPlayer) throw PRIM_EXCEPTION("InputController couldn't find target's animation player. Target: " + target->name);
+}
+
 ///////////////////////
+
 
 /// AnimationPlayer ///
 
@@ -38,6 +57,9 @@ prim::AnimationPlayer::~AnimationPlayer()
     }
 }
 
+/*
+    * Create and push new Animation.
+*/
 prim::Animation* prim::AnimationPlayer::createAnimation(std::string name, float length, uint16_t frameCount)
 {
     Animation* anim = new Animation(name, length, frameCount);
@@ -46,10 +68,20 @@ prim::Animation* prim::AnimationPlayer::createAnimation(std::string name, float 
 }
 
 
-void prim::AnimationPlayer::pushAnimation(Animation* anim)
+/*
+    * Create and push new SpriteAnimation.
+*/
+prim::SpriteAnimation* prim::AnimationPlayer::createAnimation(std::string name, float length, Sprite* target)
+{
+    SpriteAnimation* anim = new SpriteAnimation(name, length, target);
+    pushAnimation(anim);
+    return anim;
+}
+
+void prim::AnimationPlayer::pushAnimation(AnimationBase* anim)
 {
     // If animation isn't already exists in the vector
-    if(std::find_if(animations.begin(), animations.end(), [&anim] (const Animation* a) { return a->getName() == anim->getName(); }) == animations.end())
+    if(std::find_if(animations.begin(), animations.end(), [&anim] (const AnimationBase* a) { return a->getName() == anim->getName(); }) == animations.end())
     {
         animations.push_back(anim);
     }
@@ -66,7 +98,8 @@ void prim::AnimationPlayer::play()
 void prim::AnimationPlayer::play(std::string_view animationName)
 {
     if(currentAnimation && currentAnimation->getName() == animationName) return;
-    auto anim = std::find_if(animations.begin(), animations.end(), [&animationName] (const Animation* a) { return a->getName() == animationName; });
+    stop();
+    auto anim = std::find_if(animations.begin(), animations.end(), [&animationName] (const AnimationBase* a) { return a->getName() == animationName; });
     if(anim != animations.end())
     {
         currentAnimation = *anim;
@@ -74,7 +107,7 @@ void prim::AnimationPlayer::play(std::string_view animationName)
     }
     else
     {
-        std::cerr << "Couldn't find animation with name: " << animationName << std::endl;
+        throw PRIM_EXCEPTION("Couldn't find animation with name: " + std::string(animationName));
     }
 }
 
@@ -82,6 +115,7 @@ void prim::AnimationPlayer::stop()
 {
     playing = false;
     playtime = 0.0f;
+    if(currentAnimation) currentAnimation->reset();
 }
 
 void prim::AnimationPlayer::pause()

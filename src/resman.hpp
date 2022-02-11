@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <memory>
 #include <raylib-cpp.hpp>
+#include <algorithm>
 #include "prim_exception.hpp"
 
 namespace prim
@@ -24,14 +25,16 @@ namespace fs = std::filesystem;
     const std::string separator = "/";
 #endif
 
+#define MAX_RESFILES 1000u
+
 struct Resfile
 {
     std::string path;
     unsigned int size;
-    std::unique_ptr<unsigned char[]> data;
+    std::string extension;
+    unsigned char* data;
 
-    Resfile(): Resfile("", 0, nullptr) {}
-    Resfile(std::string p, unsigned int s, unsigned char* d): path(p), size(s), data(d) {}
+    Resfile(std::string p, unsigned int s, unsigned char* d): path(p), size(s), extension(fs::path(p).extension()), data(d) {}
     Resfile(const Resfile& other) = delete;
     Resfile(Resfile&& other)
     {
@@ -39,8 +42,14 @@ struct Resfile
         other.path.clear();
         size = other.size;
         other.size = 0;
-        data = std::move(other.data);
+        extension = other.extension;
+        other.extension = "";
+        data = other.data;
         other.data = nullptr;
+    }
+    ~Resfile() 
+    { 
+        delete[] data; 
     }
     Resfile& operator=(const Resfile& other) = delete;
     Resfile& operator=(Resfile&& other)
@@ -51,17 +60,18 @@ struct Resfile
             other.path.clear();
             size = other.size;
             other.size = 0;
-            data = std::move(other.data);
+            data = other.data;
             other.data = nullptr;
             return *this;
         }
     }
 
-    inline void print(std::ostream& stream)
+    inline void print(std::ostream& stream) const
     {
         stream << "Path: " << path << std::endl;
         stream << "Size: " << size << std::endl;
-        stream << "Data: \n" << data.get() << std::endl;
+        stream << "Extension: " << extension << std::endl;
+        stream << "Data: \n" << data << std::endl;
     }
 };
 
@@ -71,10 +81,11 @@ private:
     inline static const std::string packageName = "resman_package.res";
     inline static std::string packagePath;
     inline static const std::string pathIdendifier = "%PATH";
-    inline static std::unordered_map<std::string, Resfile> data;
+    inline static std::vector<Resfile*> files;    //  NOTE: this container might be dangerous due to memory reallocation (pointer invalidation)
 
     inline static bool isValidExtension(fs::path path)
     {
+        // Those are forbidden extensions
         return path.extension() != ".res" && 
             path.extension() != ".cpp" && 
             path.extension() != ".hpp" &&
@@ -85,11 +96,13 @@ private:
 
     static bool appendData(std::string path)
     {
-        std::ifstream ifstream(path, std::ios::binary);
+        fs::path p(path);
+        p.make_preferred();
+        std::ifstream ifstream(p, std::ios::binary);
         if(!ifstream.good()) return false;
-        auto iter = data.find(path);
+        auto iter = std::find_if(files.begin(), files.end(), [&p](const Resfile* file) { return file->path == p.string(); });
         // if data already in the datamap
-        if(iter != data.end()) return false;
+        if(iter != files.end()) return false;
         std::stringstream ss;
         ss << ifstream.rdbuf();
         ifstream.close();
@@ -97,7 +110,7 @@ private:
         unsigned char* buf = new unsigned char[str.length()];
         std::copy(str.begin(), str.end(), buf);
         //! emplace in datamap isn't working for some reason
-        data.insert({ path, Resfile(path, str.length(), buf) });
+        files.push_back(new Resfile(p, str.length(), buf));
         return true;
     }
 public:
@@ -161,7 +174,7 @@ public:
                         // change path separators accorging to the system
                         chunkPath = fs::path(chunkPath).make_preferred().string();
                         //! emplace in datamap isn't working for some reason
-                        data.insert({ chunkPath, Resfile(chunkPath, rawData.length(), buf) });
+                        files.push_back(new Resfile(chunkPath, rawData.length(), buf));
                         chunkPath.clear();
                     }
                     // clear chunk buffer
@@ -186,15 +199,15 @@ public:
         // insert last chunk
         unsigned char* buf = new unsigned char[rawData.length()];
         std::copy(rawData.begin(), rawData.end(), buf);
-        data.insert({ chunkPath, Resfile(chunkPath, rawData.length(), buf) });
+        files.push_back(new Resfile(chunkPath, rawData.length(), buf));
         ifstream.close();
 
         // TEMP
-        for(auto it = data.begin(); it != data.end(); ++it)
-        {
-            std::cout << "DATA PATHS" << std::endl;
-            std::cout << it->first << std::endl;
-        }
+        // for(auto it = data.begin(); it != data.end(); ++it)
+        // {
+        //     std::cout << "DATA PATHS" << std::endl;
+        //     std::cout << it->first << std::endl;
+        // }
 
         return true;
     }
@@ -203,44 +216,52 @@ public:
     {
         fs::path p(path);
         p.make_preferred();
-        path = p.string();
-        auto iter = data.find(path);
-        if(iter == data.end())
+        auto iter = std::find_if(files.begin(), files.end(), [&p](const Resfile* file) { return file->path == p.string(); });
+        if(iter == files.end())
         {
             // didn't find data in datamap, search on disk
-            if(!appendData(path))
+            if(!appendData(p))
             {
-                // didn't find on disk OR file already exists in datamap
-                std::cerr << "Didn't find file \"" << path << "\" in datamap nor on disk." << std::endl;
+                // didn't find on disk
+                std::cerr << "Didn't find file \"" << p << "\" in datamap nor on disk." << std::endl;
                 return nullptr;
             }
             else
             {
                 // found file on disk, appended it to the datamap
                 //std::cout << "Found file on disk. Added to the datamap." << std::endl;
-                auto iter = data.find(path);
-                return &iter->second;
+                auto iter = std::find_if(files.begin(), files.end(), [&p](const Resfile* file) { return file->path == p.string(); });
+                return *iter;
             }
         }
         else
         {
             // file found in the datamap
             //std::cout << "Found file in the datamap." << std::endl;
-            return &iter->second;
+            return *iter;
         }
     }
 
     /// Specific to raylib ///
-    static raylib::Texture2D loadTexture(std::string path)
+    static raylib::Texture2D* loadTexture(std::string path)
     {
         fs::path p(path);
         p.make_preferred();
-        Resfile* data = getFile(p.c_str());
-        if(!data) throw PRIM_EXCEPTION("Resman couldn't load file with path: " + std::string(p.c_str()));
-        raylib::Image im(p.extension(), data->data.get(), data->size);
-        return raylib::Texture2D(im);
+        Resfile* file = getFile(p);
+        if(!file) throw PRIM_EXCEPTION("Resman couldn't load file with path: " + std::string(p.c_str()));
+        raylib::Image im(p.extension(), file->data, file->size);
+        return new raylib::Texture2D(im);
     }
     //////////////////////////
+
+
+    /*
+        * Call this to deallocate memory
+    */
+    static void free()
+    {
+        std::for_each(files.begin(), files.end(), [](Resfile* file){ delete file; });
+    }
 };
 }
 
